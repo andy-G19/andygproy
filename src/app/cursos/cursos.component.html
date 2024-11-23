@@ -1,0 +1,26 @@
+<div>
+    <h1>Lista de Cursos</h1>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Nota</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let curso of cursos">
+          <td>{{ curso.codigo }}</td>
+          <td>{{ curso.nombre }}</td>
+          <td>{{ curso.nota }}</td>
+          <td>
+            <button (click)="editarCurso(curso.codigo)">Editar</button>
+            <button (click)="eliminarCurso(curso.codigo)">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button (click)="nuevoCurso()">Crear Nuevo Curso</button>
+  </div>
