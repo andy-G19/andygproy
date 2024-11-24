@@ -15,7 +15,7 @@
             <div class="error" *ngIf="this.form.get('nota')?.hasError('required')">
                 Se requiere nota
             </div>
-            <div class="error" *ngIf="form.get('nota').hasError('min') || form.get('nota')?.hasError('max')">
+            <div class="error" *ngIf="form?.get('nota')?.hasError('min') || form?.get('nota')?.hasError('max')">
                 La nota debe estar entre 0 y 20
             </div>
         </div>

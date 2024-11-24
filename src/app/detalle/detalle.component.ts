@@ -41,7 +41,9 @@ export class DetalleComponent {
         this.esEdicion = true;
         console.log('okok')
         this.cursosService.getCursoPorCodigo(codigo).then(curso=>{
-          this.form.setValue(curso);
+          if (curso) {
+            this.form.setValue(curso);
+          }
         });
     }});
   }

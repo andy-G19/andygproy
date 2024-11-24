@@ -6,7 +6,7 @@ import { collection, Firestore, getDocs, where, query, doc, getDoc, deleteDoc, u
   providedIn: 'root'
 })
 export class CursosService {
-  cursos:Curso[];
+  cursos:Curso[]=[];
 
   constructor(private firestore: Firestore) { 
   }
@@ -40,7 +40,7 @@ export class CursosService {
   }
 
   async updateCurso(curso:Partial<Curso>){
-    const cursoRef = doc(this.firestore, 'cursos', curso.codigo);
+    const cursoRef = doc(this.firestore, 'cursos', curso.codigo ?? '');
     await updateDoc(cursoRef, curso);
 
   }

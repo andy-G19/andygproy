@@ -4,20 +4,21 @@ import { AuthService } from '../services/auth.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  constructor(public auth: AuthService){
+  // Inyectamos el servicio AuthService para manejar la autenticación
+  constructor(public auth: AuthService) {}
 
-  }
-
-  login(){
+  // Método para manejar el inicio de sesión
+  login(): void {
     this.auth.login();
   }
 
-  logout(){
+  // Método para manejar el cierre de sesión
+  logout(): void {
     this.auth.logout();
   }
 }
+
