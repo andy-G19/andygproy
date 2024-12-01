@@ -12,7 +12,7 @@ import { Curso } from '../interfaces/curso';
   styleUrl: './home.component.css'
 })
 export class HomeComponent {
-  nombre: string = 'IVAN SORIA';
+  nombre: string = 'ANDY G';
 
 
   constructor(

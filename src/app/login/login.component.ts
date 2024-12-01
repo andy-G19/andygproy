@@ -3,22 +3,36 @@ import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
+  //standalone: true,
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  // Inyectamos el servicio AuthService para manejar la autenticación
-  constructor(public auth: AuthService) {}
+  email: string = '';
+  password: string = '';
 
-  // Método para manejar el inicio de sesión
-  login(): void {
-    this.auth.login();
+  constructor(private auth: AuthService) {}
+
+  // Método para iniciar sesión
+  login() {
+    this.auth.login(this.email, this.password)
+      .then(() => {
+        console.log('Inicio de sesión exitoso');
+      })
+      .catch(error => {
+        console.error('Error al iniciar sesión:', error);
+      });
   }
 
-  // Método para manejar el cierre de sesión
-  logout(): void {
-    this.auth.logout();
+  // Método para cerrar sesión
+  logout() {
+    this.auth.logout()
+      .then(() => {
+        console.log('Sesión cerrada exitosamente');
+      })
+      .catch(error => {
+        console.error('Error al cerrar sesión:', error);
+      });
   }
 }
 
