@@ -1,29 +1,98 @@
-import { Injectable } from '@angular/core';
-import { Auth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from '@angular/fire/auth';
+import { inject, Injectable } from '@angular/core';
+import { Auth } from '@angular/fire/auth';
+import { Firestore, collection, doc, setDoc } from '@angular/fire/firestore';  // Importamos Firestore
+import { Router } from '@angular/router';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut,
+  GoogleAuthProvider, signInWithPopup,
+  getAuth, setPersistence, browserLocalPersistence,
+  User
+  } from 'firebase/auth';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-  constructor(private auth: Auth) {}
+  autenticado:boolean = false;
+  usuario:User | undefined = undefined;
 
-  register(email: string, password: string) {
-    return createUserWithEmailAndPassword(this.auth, email, password);
+  constructor(
+    private firestore:Firestore,
+    private router:Router,
+    private auth:Auth,
+  ) {
+    setPersistence(auth, browserLocalPersistence); //establece de que forma persistirán la sesión
+    this.auth.onAuthStateChanged((user) => {
+      if (user) {
+        this.usuario = user;
+        this.autenticado = true;
+      } else {
+        this.usuario = undefined;
+        this.autenticado = false;
+      }
+    });
+
   }
 
-  login(email: string, password: string) {
-    return signInWithEmailAndPassword(this.auth, email, password);
+  // Registro de usuario
+  register(username: string, password: string) {
+    return createUserWithEmailAndPassword(this.auth, username, password)
+      .then((userCredential) => {
+        // Guardar el usuario en Firestore
+        const userRef = doc(collection(this.firestore, 'users'), userCredential.user?.uid);
+        return setDoc(userRef, {
+          username: username,
+          uid: userCredential.user?.uid
+        });
+      });
   }
 
-  resetPassword(email: string) {
-    return sendPasswordResetEmail(this.auth, email);
+  loginConGoogle(){
+    const provider = new GoogleAuthProvider();
+    const auth = getAuth();
+    return signInWithPopup(auth, provider).then((result) => {
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential?.accessToken;
+      if (token) {
+        this.setUser(result.user);
+      }
+    }).catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      const email = error.customData?.email;
+      console.error(errorCode, errorMessage, email);
+    });
   }
 
-  logueado(): boolean {
-    return this.auth.currentUser !== null;
+  // Login de usuario
+  login(username: string, password: string) {
+    return signInWithEmailAndPassword(this.auth, username, password).then((result)=>{
+      this.setUser(result.user);
+      this.autenticado = true;
+    });
   }
 
+  // Logout
   logout() {
-    return signOut(this.auth);
+    return signOut(this.auth).then(() => {
+      this.usuario = undefined;
+      this.autenticado = false;
+      this.router.navigate(['/login']);
+    });
+  }
+
+  logueado():boolean{
+    return this.autenticado;
+  }
+
+  getUser(){
+    return this.usuario;
+  }
+
+  setUser(user:User){
+    this.usuario = user;
+  }
+
+  getNombreUsuario(): string | null {
+    return this.usuario?.displayName || null;
   }
 }

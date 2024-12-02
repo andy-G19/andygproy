@@ -1,10 +1,26 @@
-<div class="auth-container">
-    <h2>Welcome to the Login Page</h2>
-    
-    <!-- Botón de login -->
-    <button class="login-btn" (click)="login()">Login</button>
-    
-    <!-- Botón de logout -->
-    <button class="logout-btn" (click)="logout()">Logout</button>
+<div *ngIf="!logueado()">
+  <h2>Iniciar Sesión</h2>
+  <form (ngSubmit)="login()">
+    <div>
+      <label for="username">Correo electrónico:</label>
+      <input type="email" id="username" [(ngModel)]="username" name="username" required />
+    </div>
+    <div>
+      <label for="password">Contraseña:</label>
+      <input type="password" id="password" [(ngModel)]="password" name="password" required />
+    </div>
+    <button type="submit">Iniciar sesión</button>
+  </form>
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+  <div>
+    <button (click)="loginConGoogle()">Loguearse con Google</button>
   </div>
-  
+</div>
+<div *ngIf="!logueado()">
+<a routerLink="/register">Registrarse</a>
+</div>
+<div *ngIf="logueado()">
+Bienvenido {{usuario().email}} {{usuario().displayName}}
+<button (click)="logout()">Salir</button>
+</div>
+

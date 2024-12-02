@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Curso } from '../interfaces/curso';
 import { collection, Firestore, getDocs, where, query, doc, getDoc, deleteDoc, updateDoc, setDoc } from '@angular/fire/firestore';
 
@@ -6,49 +6,51 @@ import { collection, Firestore, getDocs, where, query, doc, getDoc, deleteDoc, u
   providedIn: 'root'
 })
 export class CursosService {
-  cursos:Curso[]=[];
+  constructor(private firestore: Firestore) { }
 
-  constructor(private firestore: Firestore) { 
-  }
-
-  async getCursos():Promise<Curso[]>{
+  // Obtener todos los cursos
+  async getCursos(): Promise<Curso[]> {
     const cursosRef = collection(this.firestore, 'cursos');
     const snapshot = await getDocs(cursosRef);
-    const cursos: Curso[] = snapshot.docs.map(doc => ({
-      ...doc.data() as Curso,
-    }));
-    return cursos;
+    return snapshot.docs.map(doc => doc.data() as Curso);
   }
 
-  async getCursoPorCodigo(codigo:string):Promise<Curso|null>{
-    const snapshot = collection(this.firestore, 'cursos');
-    const q = query(snapshot, where("codigo", "==", codigo));
+  // Obtener un curso por su código
+  async getCursoPorCodigo(codigo: string): Promise<Curso | null> {
+    const cursosRef = collection(this.firestore, 'cursos');
+    const q = query(cursosRef, where("codigo", "==", codigo));
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
-      console.log('Curso no encontrado');
+      console.error('Curso no encontrado');
       return null;
     }
-
-    // Si se encuentra el curso, devuelve los datos del primer documento
-    const cursoDoc = querySnapshot.docs[0];  // Supone que el código es único
-    return cursoDoc.data() as Curso;  // Supone que el código es único
+    const cursoDoc = querySnapshot.docs[0];
     return cursoDoc.data() as Curso;
   }
 
-  async eraseCursoPorCodigo(codigo:string):Promise<void>{
-    await deleteDoc(doc(this.firestore, 'cursos', codigo));
+  // Eliminar un curso por su código
+  async eraseCursoPorCodigo(codigo: string): Promise<void> {
+    const cursoRef = doc(this.firestore, 'cursos', codigo);
+    const cursoSnap = await getDoc(cursoRef);
+    if (cursoSnap.exists()) {
+      await deleteDoc(cursoRef);
+    } else {
+      console.error('Curso no encontrado para eliminar');
+    }
   }
 
-  async updateCurso(curso:Partial<Curso>){
-    const cursoRef = doc(this.firestore, 'cursos', curso.codigo ?? '');
+  // Actualizar un curso
+  async updateCurso(curso: Partial<Curso>): Promise<void> {
+    if (!curso.codigo) {
+      throw new Error("El curso debe tener un código para actualizar.");
+    }
+    const cursoRef = doc(this.firestore, 'cursos', curso.codigo);
     await updateDoc(cursoRef, curso);
-
   }
 
-  async createCurso(cursonuevo:Curso):Promise<void>{
-    const cursoRef = doc(this.firestore, 'cursos', cursonuevo.codigo);
-    await setDoc(cursoRef, cursonuevo);
+  // Crear un nuevo curso
+  async createCurso(cursoNuevo: Curso): Promise<void> {
+    const cursoRef = doc(this.firestore, 'cursos', cursoNuevo.codigo);
+    await setDoc(cursoRef, cursoNuevo);
   }
-
-
 }
