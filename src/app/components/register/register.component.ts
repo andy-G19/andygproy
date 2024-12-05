@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { UserService } from 'src/app/services/user.service';
+import { AuthService } from 'src/app/services/auth.service';
+import { DataBaseService } from 'src/app/services/database.service';
 
 @Component({
   selector: 'app-register',
@@ -10,28 +10,45 @@ import { UserService } from 'src/app/services/user.service';
 })
 export class RegisterComponent implements OnInit {
 
-  formReg: FormGroup;
+  usuarios: any;
+  usuario = {
+    email: '',
+    password: '',
+    name: ''
+  }
 
-  constructor(
-    private userService: UserService,
-    private router: Router
-  ) {
-    this.formReg = new FormGroup({
-      email: new FormControl(),
-      password: new FormControl()
+  ngOnInit() {
+    this.database.obtenerTodos("users").subscribe((usuariosRef) => {
+      console.log("usuariosRef: ", usuariosRef);
+      this.usuarios = usuariosRef.map(userRef => {
+        let usuario: any = userRef.payload.doc.data();
+        usuario['id'] = userRef.payload.doc.id;
+        return usuario;
+      });
+      console.log(this.usuarios)
     })
   }
 
-  ngOnInit(): void {
+  constructor(private authService: AuthService, private database: DataBaseService, private router: Router) { }
+
+  registrarse() {
+    const { email, password } = this.usuario;
+    this.authService.register(email, password).then(user => {
+      console.log("se registro: ", user);
+      let lista = [...this.usuarios];
+      let existe = lista.find(user => user.email == email);
+
+      if (!existe) {
+        console.log("USUARIO NUEVO CREADO")
+        this.database.crear('users', this.usuario);
+      };
+
+      this.router.navigate(['/panelDeControl']);
+    }).catch(err => {
+      console.log(err)
+    })
   }
 
-  onSubmit() {
-    this.userService.register(this.formReg.value)
-      .then(response => {
-        console.log(response);
-        this.router.navigate(['/login']);
-      })
-      .catch(error => console.log(error));
-  }
+
 
 }

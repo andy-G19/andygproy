@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { UserService } from 'src/app/services/user.service';
+import { AuthService } from 'src/app/services/auth.service';
+import { DataBaseService } from 'src/app/services/database.service';
 
 @Component({
   selector: 'app-login',
@@ -9,37 +9,33 @@ import { UserService } from 'src/app/services/user.service';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
+  usuario = {
+    email: '',
+    password: '',
+  }
 
-  formLogin: FormGroup;
+  ngOnInit() {
+ 
+  }
 
-  constructor(
-    private userService: UserService,
-    private router: Router
-  ) {
-    this.formLogin = new FormGroup({
-      email: new FormControl(),
-      password: new FormControl()
+  constructor(private authService: AuthService, private router: Router) { }
+
+  Ingresar() {
+    const { email, password } = this.usuario;
+    this.authService.login(email, password).then(user => {
+      console.log("Bienvenido ", user);
+      if(!user) {
+        alert("Datos incorrectos, si no tenes cuenta registrate!");
+        return;
+      };
+      this.router.navigate(['/panelDeControl'])
+    }).catch(err=>{
+      console.log(err)
     })
   }
 
-  ngOnInit(): void {
-  }
 
-  onSubmit() {
-    this.userService.login(this.formLogin.value)
-      .then(response => {
-        console.log(response);
-      })
-      .catch(error => console.log(error));
+  logout() {
+    this.authService.logout();
   }
-
-  onClick() {
-    this.userService.loginWithGoogle()
-      .then(response => {
-        console.log(response);
-        this.router.navigate(['/main']);
-      })
-      .catch(error => console.log(error))
-  }
-
 }
